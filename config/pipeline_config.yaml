@@ -1,0 +1,21 @@
+# ============================================
+# Medallion Pipeline Configuration
+# ============================================
+
+catalog: workspace
+schema_bronze: medallion_bronze
+schema_silver: medallion_silver
+schema_gold: medallion_gold
+
+# Source dataset - NYC Taxi (available in Databricks sample datasets)
+source:
+  name: nyctaxi
+  path: /databricks-datasets/nyctaxi/tables/nyctaxi_yellow
+
+# Table names
+tables:
+  bronze: taxi_trips_raw
+  silver: taxi_trips_cleaned
+  gold_daily: taxi_daily_metrics
+  gold_zone: taxi_zone_metrics
+  gold_hourly: taxi_hourly_metrics
