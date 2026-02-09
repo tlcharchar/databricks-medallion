@@ -87,10 +87,10 @@ df_silver = (
     df_bronze
     # 1. Remover nulos em campos críticos
     .filter(
-        col("tpep_pickup_datetime").isNotNull() &
-        col("tpep_dropoff_datetime").isNotNull() &
-        col("PULocationID").isNotNull() &
-        col("DOLocationID").isNotNull()
+        col("pickup_datetime").isNotNull() &
+        col("dropoff_datetime").isNotNull() &
+        col("pickup_latitude").isNotNull() &
+        col("pickup_longitude").isNotNull()
     )
     # 2. Filtrar corridas inválidas
     .filter(
@@ -98,45 +98,52 @@ df_silver = (
         (col("fare_amount") > 0) &
         (col("passenger_count") > 0)
     )
-    # 3. Calcular duração da corrida em minutos
+    # 3. Filtrar coordenadas inválidas (lat=0, long=0 = sem GPS)
+    .filter(
+        (col("pickup_latitude") != 0) &
+        (col("pickup_longitude") != 0) &
+        (col("dropoff_latitude") != 0) &
+        (col("dropoff_longitude") != 0)
+    )
+    # 4. Calcular duração da corrida em minutos
     .withColumn(
         "trip_duration_min",
         spark_round(
-            (unix_timestamp("tpep_dropoff_datetime") - unix_timestamp("tpep_pickup_datetime")) / 60,
+            (unix_timestamp("dropoff_datetime") - unix_timestamp("pickup_datetime")) / 60,
             2
         )
     )
-    # 4. Filtrar durações absurdas (< 1 min ou > 300 min / 5h)
+    # 5. Filtrar durações absurdas (< 1 min ou > 300 min / 5h)
     .filter(
         (col("trip_duration_min") >= 1) &
         (col("trip_duration_min") <= 300)
     )
-    # 5. Calcular velocidade média (mph)
+    # 6. Calcular velocidade média (mph)
     .withColumn(
         "avg_speed_mph",
         spark_round(col("trip_distance") / (col("trip_duration_min") / 60), 2)
     )
-    # 6. Filtrar velocidades absurdas (> 100 mph)
+    # 7. Filtrar velocidades absurdas (> 100 mph)
     .filter(col("avg_speed_mph") <= 100)
-    # 7. Extrair features temporais
-    .withColumn("pickup_hour", hour("tpep_pickup_datetime"))
-    .withColumn("pickup_day_of_week", dayofweek("tpep_pickup_datetime"))
-    .withColumn("pickup_date", date_format("tpep_pickup_datetime", "yyyy-MM-dd"))
-    # 8. Calcular custo por milha
+    # 8. Extrair features temporais
+    .withColumn("pickup_hour", hour("pickup_datetime"))
+    .withColumn("pickup_day_of_week", dayofweek("pickup_datetime"))
+    .withColumn("pickup_date", date_format("pickup_datetime", "yyyy-MM-dd"))
+    # 9. Calcular custo por milha
     .withColumn(
         "cost_per_mile",
         spark_round(col("fare_amount") / col("trip_distance"), 2)
     )
-    # 9. Tip percentage
+    # 10. Tip percentage
     .withColumn(
         "tip_percentage",
         spark_round((col("tip_amount") / col("fare_amount")) * 100, 2)
     )
-    # 10. Remover colunas de metadados da Bronze
+    # 11. Remover colunas de metadados da Bronze
     .drop("_ingestion_timestamp", "_source")
-    # 11. Adicionar metadados da Silver
+    # 12. Adicionar metadados da Silver
     .withColumn("_silver_timestamp", current_timestamp())
-    # 12. Remover duplicatas
+    # 13. Remover duplicatas
     .dropDuplicates()
 )
 

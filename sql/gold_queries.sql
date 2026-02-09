@@ -31,10 +31,11 @@ FROM workspace.medallion_gold.taxi_daily_metrics
 ORDER BY pickup_date;
 
 -- -----------------------------------------------
--- 3. Top 20 zonas mais movimentadas
+-- 3. Top 20 zonas mais movimentadas (por lat/long)
 -- -----------------------------------------------
 SELECT
-    zone_id,
+    zone_lat,
+    zone_lon,
     total_trips,
     total_revenue,
     avg_fare,

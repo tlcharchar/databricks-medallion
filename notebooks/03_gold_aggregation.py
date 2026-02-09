@@ -18,7 +18,7 @@
 
 from pyspark.sql.functions import (
     col, count, sum as spark_sum, avg, min as spark_min, max as spark_max,
-    round as spark_round, percentile_approx, current_timestamp
+    round as spark_round, percentile_approx, current_timestamp, when
 )
 
 CATALOG = "workspace"
@@ -72,13 +72,19 @@ display(df_daily.limit(10))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Gold 2 — Métricas por Zona
+# MAGIC ## Gold 2 — Métricas por Zona Geográfica
+# MAGIC
+# MAGIC Como o dataset usa lat/long (não Location IDs), criamos zonas
+# MAGIC arredondando coordenadas para 2 decimais (~1.1 km de precisão).
 
 # COMMAND ----------
 
 df_zone = (
     df_silver
-    .groupBy("PULocationID")
+    # Criar zona geográfica arredondando lat/long (2 decimais ≈ 1.1km)
+    .withColumn("zone_lat", spark_round(col("pickup_latitude"), 2))
+    .withColumn("zone_lon", spark_round(col("pickup_longitude"), 2))
+    .groupBy("zone_lat", "zone_lon")
     .agg(
         count("*").alias("total_trips"),
         spark_round(spark_sum("fare_amount"), 2).alias("total_revenue"),
@@ -87,8 +93,6 @@ df_zone = (
         spark_round(avg("tip_percentage"), 2).alias("avg_tip_pct"),
         spark_round(avg("trip_duration_min"), 2).alias("avg_duration_min")
     )
-    .withColumnRenamed("PULocationID", "zone_id")
-    .withColumn("zone_type", col("zone_id").cast("string"))
     .withColumn("_gold_timestamp", current_timestamp())
     .orderBy(col("total_trips").desc())
 )
@@ -130,9 +134,6 @@ df_hourly = (
     .withColumn("_gold_timestamp", current_timestamp())
     .orderBy("pickup_day_of_week", "pickup_hour")
 )
-
-# Precisa importar when
-from pyspark.sql.functions import when
 
 GOLD_HOURLY = f"{CATALOG}.{SCHEMA_GOLD}.taxi_hourly_metrics"
 df_hourly.write.format("delta").mode("overwrite").saveAsTable(GOLD_HOURLY)
