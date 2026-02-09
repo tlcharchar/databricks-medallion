@@ -56,12 +56,24 @@ print(f"Registros na Bronze: {total_bronze:,}")
 # COMMAND ----------
 
 # Verificar nulos por coluna
+# Nota: isnan() só funciona com DOUBLE/FLOAT, não com TIMESTAMP/STRING
 from pyspark.sql.functions import count, when, isnan, isnull
+from pyspark.sql.types import DoubleType, FloatType
 
-null_counts = df_bronze.select([
-    count(when(isnull(c) | isnan(c), c)).alias(c)
-    for c in df_bronze.columns if c not in ["_ingestion_timestamp", "_source"]
-])
+numeric_types = (DoubleType, FloatType)
+
+null_exprs = []
+for field in df_bronze.schema.fields:
+    if field.name in ["_ingestion_timestamp", "_source"]:
+        continue
+    if isinstance(field.dataType, numeric_types):
+        # Para colunas numéricas: verificar null E NaN
+        null_exprs.append(count(when(isnull(field.name) | isnan(field.name), field.name)).alias(field.name))
+    else:
+        # Para demais tipos: verificar apenas null
+        null_exprs.append(count(when(isnull(field.name), field.name)).alias(field.name))
+
+null_counts = df_bronze.select(null_exprs)
 display(null_counts)
 
 # COMMAND ----------
