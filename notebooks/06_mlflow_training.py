@@ -28,6 +28,11 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import time
+import os
+
+# Configurar MLflow para usar Unity Catalog como registry
+mlflow.set_registry_uri("databricks-uc")
+os.environ["MLFLOW_TRACKING_URI"] = "databricks"
 
 # Configurar experimento
 EXPERIMENT_NAME = "/Users/thiagocharchar@gmail.com/nyc-taxi-tip-prediction"
