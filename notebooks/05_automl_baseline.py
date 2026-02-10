@@ -71,9 +71,10 @@ print(f"Test:  {df_test_spark.count():,} registros")
 
 # COMMAND ----------
 
-# Amostrar se necessario (sklearn precisa caber em memoria)
-MAX_TRAIN_ROWS = 500_000
-MAX_TEST_ROWS = 100_000
+# Amostrar para caber na memoria do serverless Free Edition
+# (limite ~2GB RAM — amostras menores evitam OOM/SIGKILL)
+MAX_TRAIN_ROWS = 50_000
+MAX_TEST_ROWS = 10_000
 
 train_count = df_train_spark.count()
 test_count = df_test_spark.count()
@@ -125,15 +126,15 @@ models = {
         random_state=42
     ),
     "RandomForest": RandomForestRegressor(
-        n_estimators=100,
-        max_depth=12,
+        n_estimators=50,
+        max_depth=8,
         min_samples_split=20,
-        n_jobs=-1,
+        n_jobs=1,
         random_state=42
     ),
     "GradientBoosting": GradientBoostingRegressor(
-        n_estimators=200,
-        max_depth=6,
+        n_estimators=100,
+        max_depth=5,
         learning_rate=0.1,
         subsample=0.8,
         random_state=42

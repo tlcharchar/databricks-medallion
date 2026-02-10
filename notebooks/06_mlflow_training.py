@@ -48,17 +48,21 @@ mlflow.set_experiment(EXPERIMENT_NAME)
 CATALOG = "workspace"
 SCHEMA_ML = "medallion_ml"
 
-# Carregar e amostrar
-MAX_ROWS = 500_000
+# Amostrar para caber na memoria do serverless Free Edition
+MAX_TRAIN_ROWS = 50_000
+MAX_TEST_ROWS = 10_000
 
 df_train_spark = spark.table(f"{CATALOG}.{SCHEMA_ML}.taxi_tip_train")
 df_test_spark = spark.table(f"{CATALOG}.{SCHEMA_ML}.taxi_tip_test")
 
 train_count = df_train_spark.count()
-sample_frac = min(1.0, MAX_ROWS / train_count)
+test_count = df_test_spark.count()
 
-df_train_pd = df_train_spark.sample(fraction=sample_frac, seed=42).toPandas()
-df_test_pd = df_test_spark.sample(fraction=0.2, seed=42).toPandas()
+train_frac = min(1.0, MAX_TRAIN_ROWS / train_count)
+test_frac = min(1.0, MAX_TEST_ROWS / test_count)
+
+df_train_pd = df_train_spark.sample(fraction=train_frac, seed=42).toPandas()
+df_test_pd = df_test_spark.sample(fraction=test_frac, seed=42).toPandas()
 
 TARGET = "target_tip_amount"
 FEATURE_COLS = [c for c in df_train_pd.columns if c != TARGET]
@@ -84,8 +88,8 @@ print(f"Train: {X_train.shape[0]:,} | Test: {X_test.shape[0]:,} | Features: {X_t
 # COMMAND ----------
 
 param_grid = {
-    "n_estimators": [100, 200],
-    "max_depth": [4, 6, 8],
+    "n_estimators": [50, 100],
+    "max_depth": [4, 6],
     "learning_rate": [0.05, 0.1],
     "subsample": [0.8],
 }
