@@ -151,8 +151,10 @@ with mlflow.start_run(run_name="hyperparameter_tuning_gb") as parent_run:
             mlflow.log_metric("r2", r2)
             mlflow.log_metric("training_time_sec", train_time)
 
-            # Logar modelo
-            mlflow.sklearn.log_model(model, artifact_path="model")
+            # Logar modelo com signature (obrigatorio para Unity Catalog)
+            from mlflow.models import infer_signature
+            signature = infer_signature(X_test, y_pred)
+            mlflow.sklearn.log_model(model, artifact_path="model", signature=signature)
 
             # Feature importance
             importance = pd.DataFrame({

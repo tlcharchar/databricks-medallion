@@ -201,10 +201,14 @@ for model_name, model in models.items():
             mlflow.log_metric(metric_name, metric_value)
             print(f"  {metric_name}: {metric_value:.4f}")
 
-        # Logar modelo
+        # Logar modelo com signature (obrigatorio para Unity Catalog)
+        from mlflow.models import infer_signature
+        y_pred = model.predict(X_test)
+        signature = infer_signature(X_test, y_pred)
         mlflow.sklearn.log_model(
             model,
             artifact_path="model",
+            signature=signature,
             input_example=X_test[:5],
         )
 
