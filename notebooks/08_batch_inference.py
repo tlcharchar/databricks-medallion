@@ -21,31 +21,34 @@
 # COMMAND ----------
 
 import mlflow
-import mlflow.pyfunc
+import mlflow.sklearn
 from pyspark.sql.functions import (
     col, abs as spark_abs, round as spark_round,
     avg, count, when, current_timestamp,
-    pandas_udf
 )
-from pyspark.sql.types import DoubleType
 import pandas as pd
+import numpy as np
+import os
 
-mlflow.set_registry_uri("databricks-uc")
+os.environ["MLFLOW_TRACKING_URI"] = "databricks"
 
 CATALOG = "workspace"
 SCHEMA_ML = "medallion_ml"
 SCHEMA_GOLD = "medallion_gold"
-MODEL_NAME = f"{CATALOG}.{SCHEMA_ML}.nyc_taxi_tip_model"
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Carregar modelo Champion
+# MAGIC ## Carregar melhor modelo do MLflow
 
 # COMMAND ----------
 
-# Carregar modelo do registry
-model = mlflow.sklearn.load_model(f"models:/{MODEL_NAME}@Champion")
+# Recuperar model_uri salvo no notebook 07
+ref = spark.table(f"{CATALOG}.{SCHEMA_ML}.best_model_ref").collect()[0]
+model_uri = ref["model_uri"]
+print(f"Carregando modelo de: {model_uri}")
+
+model = mlflow.sklearn.load_model(model_uri)
 print(f"Modelo carregado: {type(model).__name__}")
 
 # COMMAND ----------
@@ -55,9 +58,13 @@ print(f"Modelo carregado: {type(model).__name__}")
 
 # COMMAND ----------
 
-# Usar o dataset de teste completo (nao amostrado)
-df_test = spark.table(f"{CATALOG}.{SCHEMA_ML}.taxi_tip_test")
-print(f"Registros para inferencia: {df_test.count():,}")
+# Amostrar para caber na memoria do serverless Free Edition
+MAX_INFERENCE_ROWS = 50_000
+df_test_full = spark.table(f"{CATALOG}.{SCHEMA_ML}.taxi_tip_test")
+test_count = df_test_full.count()
+sample_frac = min(1.0, MAX_INFERENCE_ROWS / test_count)
+df_test = df_test_full.sample(fraction=sample_frac, seed=42)
+print(f"Registros para inferencia: {df_test.count():,} (amostrado de {test_count:,})")
 
 # COMMAND ----------
 
