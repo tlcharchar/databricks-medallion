@@ -50,7 +50,7 @@ print(f"Experimento MLflow: {EXPERIMENT_NAME}")
 
 # COMMAND ----------
 
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_ML = "medallion_ml"
 
 # Carregar como Spark DataFrames

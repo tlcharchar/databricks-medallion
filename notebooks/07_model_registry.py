@@ -38,7 +38,7 @@ os.environ["MLFLOW_TRACKING_URI"] = "databricks"
 
 client = MlflowClient()
 
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_ML = "medallion_ml"
 EXPERIMENT_NAME = "/Users/thiagocharchar@gmail.com/nyc-taxi-tip-prediction"
 

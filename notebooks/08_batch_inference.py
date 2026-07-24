@@ -32,7 +32,7 @@ import os
 
 os.environ["MLFLOW_TRACKING_URI"] = "databricks"
 
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_ML = "medallion_ml"
 SCHEMA_GOLD = "medallion_gold"
 
@@ -220,7 +220,7 @@ display(df_gold_ml)
 # MAGIC   ROUND(AVG(avg_prediction_error), 2) as avg_error,
 # MAGIC   ROUND(AVG(pct_accurate_within_1usd), 1) as pct_accurate,
 # MAGIC   SUM(total_trips) as total_trips
-# MAGIC FROM workspace.medallion_gold.taxi_tip_predictions
+# MAGIC FROM urban_mobility.medallion_gold.taxi_tip_predictions
 # MAGIC GROUP BY period_name
 # MAGIC ORDER BY avg_error
 
@@ -233,7 +233,7 @@ display(df_gold_ml)
 # MAGIC   ROUND(AVG(avg_actual_tip), 2) as gorjeta_real,
 # MAGIC   ROUND(AVG(avg_predicted_tip), 2) as gorjeta_prevista,
 # MAGIC   ROUND(AVG(avg_prediction_error), 2) as erro_medio
-# MAGIC FROM workspace.medallion_gold.taxi_tip_predictions
+# MAGIC FROM urban_mobility.medallion_gold.taxi_tip_predictions
 # MAGIC GROUP BY is_weekend
 
 # COMMAND ----------
@@ -268,7 +268,7 @@ display(df_gold_ml)
 # MAGIC %md
 # MAGIC ## Proximo passo: Atualizar o Genie Space
 # MAGIC
-# MAGIC Adicione a tabela `workspace.medallion_gold.taxi_tip_predictions`
+# MAGIC Adicione a tabela `urban_mobility.medallion_gold.taxi_tip_predictions`
 # MAGIC ao seu Genie Space e adicione estas instrucoes:
 # MAGIC
 # MAGIC ```

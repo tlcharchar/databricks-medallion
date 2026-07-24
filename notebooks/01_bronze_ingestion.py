@@ -16,7 +16,7 @@
 # COMMAND ----------
 
 # Configuração
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_BRONZE = "medallion_bronze"
 
 # Criar schema Bronze se não existir

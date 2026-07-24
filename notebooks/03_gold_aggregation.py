@@ -21,7 +21,7 @@ from pyspark.sql.functions import (
     round as spark_round, percentile_approx, current_timestamp, when
 )
 
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_SILVER = "medallion_silver"
 SCHEMA_GOLD = "medallion_gold"
 
@@ -149,7 +149,7 @@ display(df_hourly.limit(10))
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SHOW TABLES IN workspace.medallion_gold
+# MAGIC SHOW TABLES IN urban_mobility.medallion_gold
 
 # COMMAND ----------
 

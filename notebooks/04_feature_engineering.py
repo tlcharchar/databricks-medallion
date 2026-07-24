@@ -27,7 +27,7 @@ from pyspark.sql.functions import (
     current_timestamp
 )
 
-CATALOG = "workspace"
+CATALOG = "urban_mobility"
 SCHEMA_SILVER = "medallion_silver"
 SCHEMA_ML = "medallion_ml"
 

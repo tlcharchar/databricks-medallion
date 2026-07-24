@@ -2,7 +2,7 @@
 # Medallion Pipeline Configuration
 # ============================================
 
-catalog: workspace
+catalog: urban_mobility
 schema_bronze: medallion_bronze
 schema_silver: medallion_silver
 schema_gold: medallion_gold
